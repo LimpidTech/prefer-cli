@@ -15,7 +15,7 @@ screen.key ['escape', 'C-c', 'q'], -> process.exit 0
 
 
 class PreferCommandLineInterface
-  constructor: (@configurator) ->
+  constructor: (@identifier, @configurator) ->
     sourceText = chalk.white configurator.options.results.source
     winston.debug 'Using ' + sourceText
 
@@ -46,13 +46,19 @@ class PreferCommandLineInterface
 
     @render()
 
-  render: =>
-    program.clear()
+  backToTop: =>
+    @back() while @stack.length > 1
 
+  render: =>
     @stack.push @configuration unless @stack.length
     model = _.last @stack
 
+    top = @header?.height or 0
+
     window = blessed.list
+      top: top
+      left: 0
+      height: screen.lines - top
       itemFg: 'cyan'
       selectedFg: 'white'
       selectedBg: 'blue'
@@ -67,21 +73,54 @@ class PreferCommandLineInterface
 
     for key in keys
       value = model[key]
-      window.add key + '[' + typeof value + ']' + ' = ' + value.toString()
+      typeText = chalk.blue typeof value
 
+      if _.isObject value
+        valueText = ''
+      else
+        valueText = chalk.magenta value.toString()
+
+      nameText = chalk.white key
+
+      window.add "#{ nameText } = [#{ typeText }] #{ valueText }"
+
+    window.key 't', @backToTop
     window.key 'h', @back
-
     window.on 'select', @selected keys, model
 
     window.focus()
     screen.render()
 
-  initialize: (@configuration) ->
+  clean: ->
     window.detach() while window = @windows.pop() if @windows?
+    @header.detach() if @header?
+
+  createHeader: ->
+    @header?.detach()
+    return unless screen.height > 15
+
+    content = """
+
+      identifier: #{ chalk.white @identifier }
+      location: #{ chalk.magenta @configurator.options.results.source }
+
+    """
+
+    @header = blessed.box
+      top: 0
+      left: 5
+      height: 4
+
+    @header.setContent content
+    screen.append @header
+
+  initialize: (@configuration) ->
+    @clean()
 
     @stack = []
     @windows = []
 
+    @createHeader()
     @render()
 
   @main: ->
@@ -89,11 +128,11 @@ class PreferCommandLineInterface
     {argv} = yargs
 
     configurationFileName = _.first argv._
-    # winston.debug 'Loading ' + chalk.white configurationFileName
+    winston.debug 'Loading ' + chalk.white configurationFileName
 
     prefer.load configurationFileName, (err, configurator) ->
       throw err if err?
-      new PreferCommandLineInterface configurator
+      new PreferCommandLineInterface configurationFileName, configurator
 
 
 module.exports.main = PreferCommandLineInterface.main
