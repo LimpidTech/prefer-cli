@@ -42,6 +42,7 @@ the following are possible use cases (and many more):
 - h: back
 - q or escape: quit
 - t: navigate to top of tree
+- r: reset the view after configuration file have changed
 
 
 [prfr]: http://github.com/LimpidTech/prefer
