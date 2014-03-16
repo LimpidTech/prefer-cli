@@ -41,6 +41,7 @@ the following are possible use cases (and many more):
 - k: navigate up
 - h: back
 - q or escape: quit
+- t: navigate to top of tree
 
 
 [prfr]: http://github.com/LimpidTech/prefer
