@@ -190,6 +190,11 @@ class PreferCommandLineInterface
     yargs.demand 1
     {argv} = yargs
 
+    if argv._.length is 0
+      throw new Error '''
+        A filename must be provided as the first command-line argument.
+      '''
+
     configurationFileName = _.first argv._
     winston.debug 'Loading ' + chalk.white configurationFileName
 
