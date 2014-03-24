@@ -15,31 +15,30 @@ screen.key ['escape', 'C-c', 'q'], -> process.exit 0
 
 
 class PreferCommandLineInterface
-  constructor: (@identifier, @configurator) ->
-    @configurator.options.loader.on 'updated', =>
-      @configurationUpdated = true
-      @createHeader true
-      @createFooter true
+  constructor: (@identifier, @prefer, configurator) ->
+    @prefer.on 'updated', (@updatedConfigurator) =>
+      @createHeader @updatedConfigurator, true
+      @createFooter @updatedConfigurator, true
 
-    sourceText = chalk.white configurator.options.results.source
+    sourceText = chalk.white configurator.state.source
     winston.debug 'Using ' + sourceText
 
-    @configure()
+    @configure configurator
 
-  configure: -> @configurator.get (err, configuration) =>
+  configure: (configurator) -> configurator.get (err, configuration) =>
     throw err if err
 
-    @configurationUpdated = false
-    @initialize configuration
+    @updatedConfigurator = undefined
+    @initialize configurator, configuration
 
-  selected: (keys, model) -> (err, selectedIndex) =>
+  selected: (configurator, keys, model) -> (err, selectedIndex) =>
     key = keys[selectedIndex]
     value = model[key]
 
     if _.isObject value
       @selections.push key
       @stack.push value
-      @render()
+      @render configurator
 
   clean: ->
     # TODO: We can leverage #selections to reproduce #stack in #render
@@ -50,20 +49,20 @@ class PreferCommandLineInterface
     window.detach() while window = @windows.pop()
     @header.detach() if @header?
 
-  createHeader: (render) ->
+  createHeader: (configurator, render) ->
     @header?.detach()
     return unless screen.height > 15
 
     content = """
 
       identifier: #{ chalk.white @identifier }
-      location: #{ chalk.magenta @configurator.options.results.source }
+      location: #{ chalk.magenta configurator.state.source }
 
     """
 
     @header = blessed.box
       top: 0
-      left: 5
+      left:  5
       height: 4
 
     @header.setContent content
@@ -71,13 +70,13 @@ class PreferCommandLineInterface
 
     screen.render() if render
 
-  createFooter: (render) ->
+  createFooter: (configurator, render) ->
     @statusLeft?.detach()
     @statusRight?.detach()
     @footer?.detach()
     return unless screen.height > 4
 
-    changedFlag = chalk.red '[changed]' if @configurationUpdated
+    changedFlag = chalk.red '[changed]' if @updatedConfigurator
     status = @selections.join '.'
 
     height = 1
@@ -116,11 +115,7 @@ class PreferCommandLineInterface
 
     screen.render() if render
 
-  initialize: (@configuration) ->
-    @clean()
-    @render()
-
-  back: =>
+  back: (configurator) -> =>
     return if @stack.length is 1
 
     @stack.pop()
@@ -132,18 +127,18 @@ class PreferCommandLineInterface
     newWindow = _.last @windows
     newWindow.focus()
 
-    @render()
+    @render configurator
 
-  backToTop: => @back() while @stack.length > 1
-  reset: => @configure() if @configurationUpdated
+  backToTop: (configurator) -> => @back configurator while @stack.length > 1
+  reset: => @configure @updatedConfigurator if @updatedConfigurator?
 
-  render: =>
+  render: (configurator) =>
     @stack.push _.cloneDeep @configuration unless @stack.length
 
     model = _.last @stack
 
-    @createHeader model
-    @createFooter model
+    @createHeader configurator, model
+    @createFooter configurator, model
 
     headerHeight = @header?.height or 0
     footerHeight = @footer?.height or 0
@@ -177,14 +172,18 @@ class PreferCommandLineInterface
 
       window.add "#{ nameText } = [#{ typeText }] #{ valueText }"
 
-    window.key 't', @backToTop
-    window.key 'h', @back
+    window.key 't', @backToTop configurator
+    window.key 'h', @back configurator
     window.key 'r', @reset
 
-    window.on 'select', @selected keys, model
+    window.on 'select', @selected configurator, keys, model
 
     window.focus()
     screen.render()
+
+  initialize: (configurator, @configuration) ->
+    @clean()
+    @render configurator
 
   @main: ->
     yargs.demand 1
@@ -200,7 +199,7 @@ class PreferCommandLineInterface
 
     prefer.load configurationFileName, (err, configurator) ->
       throw err if err?
-      new PreferCommandLineInterface configurationFileName, configurator
+      new PreferCommandLineInterface configurationFileName, prefer, configurator
 
 
 module.exports.main = PreferCommandLineInterface.main
