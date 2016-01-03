@@ -1,13 +1,13 @@
 {
   "name": "prefer-cli",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "A tool for exploring prefer configuration data.",
   "main": "index.js",
   "bin": {
     "prefer": "bin/prefer.js"
   },
   "dependencies": {
-    "prefer": "^0.5.3",
+    "prefer": "^0.5.5",
     "lodash": "^2.4.1",
     "chalk": "^0.4.0",
     "yargs": "^1.2.1",
