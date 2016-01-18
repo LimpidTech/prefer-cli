@@ -1,6 +1,6 @@
 {
   "name": "prefer-cli",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "A tool for exploring prefer configuration data.",
   "main": "index.js",
   "bin": {
