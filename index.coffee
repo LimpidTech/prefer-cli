@@ -7,9 +7,9 @@ yargs = require 'yargs'
 
 
 program = blessed.program()
-
 screen = blessed.screen
   dump: true
+
 
 screen.key ['escape', 'C-c', 'q'], -> process.exit 0
 
@@ -172,11 +172,13 @@ class PreferCommandLineInterface
 
       window.add "#{ nameText } = [#{ typeText }] #{ valueText }"
 
+    onSelected = @selected configurator, keys, model
+
     window.key 't', @backToTop configurator
     window.key ['h', 'left'], @back configurator
     window.key 'r', @reset
 
-    window.on 'select', @selected configurator, keys, model
+    window.on 'select', onSelected
 
     window.focus()
     screen.render()
