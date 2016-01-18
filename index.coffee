@@ -173,7 +173,7 @@ class PreferCommandLineInterface
       window.add "#{ nameText } = [#{ typeText }] #{ valueText }"
 
     window.key 't', @backToTop configurator
-    window.key 'h', @back configurator
+    window.key ['h', 'left'], @back configurator
     window.key 'r', @reset
 
     window.on 'select', @selected configurator, keys, model
