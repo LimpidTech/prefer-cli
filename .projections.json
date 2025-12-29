@@ -1,0 +1,23 @@
+{
+  "src/*.rs": {
+    "alternate": "src/{}.rs",
+    "type": "source"
+  },
+  "src/backend/*.rs": {
+    "alternate": "src/backend/{}.rs",
+    "type": "backend"
+  },
+  "src/tui/*.rs": {
+    "alternate": "src/tui/{}.rs",
+    "type": "tui"
+  },
+  "src/main.rs": {
+    "type": "main"
+  },
+  "src/cli.rs": {
+    "type": "cli"
+  },
+  "Cargo.toml": {
+    "type": "manifest"
+  }
+}

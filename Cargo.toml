@@ -1,0 +1,31 @@
+[package]
+name = "prefer-cli"
+version = "0.7.0"
+edition = "2021"
+authors = ["LimpidTech"]
+license = "MIT"
+description = "A CLI tool for querying, setting, and exploring configuration files"
+repository = "https://github.com/LimpidTech/prefer-cli"
+keywords = ["config", "configuration", "cli", "prefer"]
+categories = ["command-line-utilities", "config"]
+
+[dependencies]
+# CLI parsing
+clap = { version = "4", features = ["derive"] }
+
+# TUI
+ratatui = "0.29"
+crossterm = "0.28"
+
+# Config parsing (embedded backend)
+prefer = { git = "https://github.com/LimpidTech/prefer.rs" }
+
+# Error handling
+thiserror = "2"
+anyhow = "1"
+
+# Async for process spawning
+tokio = { version = "1", features = ["process", "io-util", "rt-multi-thread", "macros"] }
+
+[dev-dependencies]
+tempfile = "3"
